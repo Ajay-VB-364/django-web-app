@@ -64,3 +64,13 @@ class MessageSerializer(serializers.Serializer):
     country_code = serializers.CharField(max_length=10)
     content = serializers.CharField(max_length = 200)
 
+
+class LinkedinSerializer(serializers.Serializer):
+    # initialize fields
+    username = serializers.CharField()
+    password = serializers.CharField(
+        style={'input_type': 'password'},
+        trim_whitespace=False,
+    )
+    company = serializers.CharField()
+

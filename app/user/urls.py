@@ -11,4 +11,5 @@ urlpatterns = [
     path('token/', views.CreateTokenView.as_view(), name='token'),
     path('me/', views.ManageUserView.as_view(), name='me'),
     path('messages/', views.ManageUserMessageView.as_view(), name='message'),
+    path('linkedin/', views.LinkedinAPIView.as_view(), name='linkedin'),
 ]

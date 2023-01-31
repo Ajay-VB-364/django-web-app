@@ -2,17 +2,19 @@
 Views for User API
 """
 import json
-from rest_framework import generics, authentication, permissions
+from rest_framework import generics, authentication, permissions, status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from user.serializers import (
     UserSerializer,
     AuthTokenSerializer,
     MessageSerializer,
+    LinkedinSerializer,
 )
 from rest_framework.response import Response
 from constants.whatsapp import TEMPLATES
 from utils.whatsapp import WhatsAppIntegration
+from utils.linkedin import LinkedInService
 
 class CreateUserView(generics.CreateAPIView):
     """ Create a new user in system """
@@ -35,7 +37,6 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
         """ retrieve and return authenticated user """
         return self.request.user
 
-from rest_framework import status
 
 class ManageUserMessageView(generics.CreateAPIView):
     """ Send Whats App message """
@@ -67,3 +68,29 @@ class ManageUserMessageView(generics.CreateAPIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
+class LinkedinAPIView(generics.CreateAPIView):
+    """ Send Whats App message """
+    serializer_class = LinkedinSerializer
+
+    def create(self, request):
+        req = json.loads(request.body)
+        username = req['username'] or None
+        password = req['password'] or None
+        company = req['company'] or None
+
+        data = {}
+
+        if username and password:
+            try:
+                linkedin = LinkedInService(username=username, password=password)
+                api = linkedin.get_linkedin_api()
+                comp_data = linkedin.get_linkedin_company_details(api=api, company=company)
+                data['linkedin_company_details'] = comp_data
+                data['success'] = True
+                data['message'] = 'Linkedin company details fetched successfully'
+            except Exception as e:
+                data['success'] = False
+                data['message'] = str(e)
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(data=data, status=status.HTTP_200_OK)
