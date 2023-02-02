@@ -16,6 +16,7 @@ from constants.whatsapp import TEMPLATES
 from utils.whatsapp import WhatsAppIntegration
 from utils.linkedin import LinkedInService
 
+
 class CreateUserView(generics.CreateAPIView):
     """ Create a new user in system """
     serializer_class = UserSerializer
@@ -93,4 +94,42 @@ class LinkedinAPIView(generics.CreateAPIView):
                 data['message'] = str(e)
                 return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
         
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+from utils.decorators import user_role_check
+from rest_framework.views import APIView
+
+
+class UserRetrieveView(APIView):
+    """ Get user data from system """
+    serializer_class = UserSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    @user_role_check(['is_support', 'is_staff'])
+    def get(self, request):
+        """ retrieve and return authenticated user """
+        data = {}
+        data['name'] = request.user.name
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+from rest_framework import generics, authentication, permissions, status
+from user.serializers import UserSerializer
+from utils.decorators import user_role_check
+
+
+class UserRetrieveView2(generics.RetrieveAPIView):
+    """ Get user data from system """
+    serializer_class = UserSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    @user_role_check(['is_support', 'is_staff'])
+    def get(self, request):
+        """ retrieve and return authenticated user """
+        data = {}
+        data['user'] = request.user.name
         return Response(data=data, status=status.HTTP_200_OK)
